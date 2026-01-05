@@ -37,7 +37,7 @@
 - **Education**: Learn about mesh networking protocols and security
 
 ### Key Features
-- Multi-interface support (MQTT, Serial/RF)
+- Multi-interface support (MQTT, Serial/RF, TCP/Network)
 - Real-time packet capture with PCAP-NG export
 - AES and PKI encryption/decryption
 - Publishing: NodeInfo, Position, Text Messages, Traceroutes
@@ -82,7 +82,7 @@
 ┌──────────────▼──────────────────────────────────────────────┐
 │                  INTERFACE LAYER                             │
 ├─────────────────────────────────────────────────────────────┤
-│  MqttInterface    SerialInterface    WebSocketInterface      │
+│  MqttInterface  SerialInterface  TcpInterface  WebSocketInterface │
 │  (Multiple instances supported per type)                     │
 └──────────────┬──────────────────────────────────────────────┘
                │
@@ -117,7 +117,7 @@
 │  ├── Packets (time-series packet data)                      │
 │  ├── Links (bidirectional communication)                    │
 │  ├── Channels (encryption keys)                             │
-│  ├── Interfaces (MQTT/Serial config)                        │
+│  ├── Interfaces (MQTT/Serial/TCP config)                    │
 │  └── Captures (PCAP sessions)                               │
 │                                                              │
 │  Redis (Celery broker + caching)                            │
@@ -129,8 +129,8 @@
 #### Sniffing (Passive)
 ```
 Meshtastic Network
-    ↓ (MQTT/Serial)
-Interface (MQTT/Serial)
+    ↓ (MQTT/Serial/TCP)
+Interface (MQTT/Serial/TCP)
     ↓
 Dispatcher.ingest_packet()
     ↓
@@ -203,7 +203,7 @@ stridetastic_server/
 │   │   ├── admin/               # Admin panel customizations
 │   │   ├── controllers/         # API endpoint controllers
 │   │   ├── ingest/              # Packet ingestion pipeline
-│   │   ├── interfaces/          # MQTT/Serial interface implementations
+│   │   ├── interfaces/          # MQTT/Serial/TCP interface implementations
 │   │   ├── management/commands/ # Django commands (seeds.py)
 │   │   ├── mesh/
 │   │   │   ├── encryption/      # AES + PKI crypto
@@ -1019,7 +1019,7 @@ docker compose run --rm api_stridetastic pytest -v
 - Test factories via `factory_boy`
 
 ### 3. Strategy Pattern
-- Interface implementations (`MqttInterface`, `SerialInterface`)
+- Interface implementations (`MqttInterface`, `SerialInterface`, `TcpInterface`)
 - Payload handlers (NodeInfo, Position, Telemetry, etc.)
 
 ### 4. Observer Pattern

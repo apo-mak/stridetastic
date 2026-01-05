@@ -10,7 +10,7 @@ Stridetastic is an open-source monitoring and observability framework for Meshta
 ## Feature Overview
 
 ### Capture & Ingest
-- Multi-interface sniffer connects to multiple MQTT brokers and physical serial radios simultaneously.
+- Multi-interface sniffer connects to multiple MQTT brokers, physical serial radios, and network-connected nodes (TCP) simultaneously.
 - Near real-time ingestion pipeline (Dispatcher → PacketHandler) that validates MeshPackets, **decrypts AES-CTR/PKI** payloads, maps nodes/channels/links, and normalizes protobuf payloads (NodeInfo, Position, Telemetry, NeighborInfo, RouteDiscovery, Routing).
 - TimescaleDB hypertables persist packets, metrics, and historical states; raw **PCAP-NG** files are stored on disk and indexed for later analysis.
 - UI-driven PCAP sessions with start/stop/download controls, automatic rotation, size limits, and per-frame annotations compatible with the bundled Wireshark Lua dissector (DLT 162).
@@ -68,7 +68,7 @@ compose.yaml
 └── grafana_stridetastic       # Pre-provisioned dashboards
 ```
 
-- **Capture Layer** – MQTT, Serial, and WebSocket interfaces feed the dispatcher.
+- **Capture Layer** – MQTT, Serial, TCP, and WebSocket interfaces feed the dispatcher.
 - **Service Layer** – Sniffer, Publisher, Capture, PKI, and Virtual Node services coordinated by a singleton ServiceManager.
 - **Data Layer** – TimescaleDB hypertables for packets/nodes/links + PCAP files on disk.
 - **Presentation Layer** – Next.js dashboard for operations, Grafana for analytics, Django admin for power users, Wireshark for forensic drills.
@@ -86,6 +86,20 @@ timescale_stridetastic/ Host-mounted database volume
 CLAUDE.md               Full-stack architecture digest for AI copilots
 .env.template           Example .env file
 ```
+
+## Docker Images
+
+Pre-built Docker images are available on GitHub Container Registry:
+
+```bash
+# Pull the API image
+docker pull ghcr.io/0wulf/stridetastic-api:latest
+
+# Pull the Web dashboard image
+docker pull ghcr.io/0wulf/stridetastic-web:latest
+```
+
+Images are automatically built and published on every push to `main` and for version tags (`v*`).
 
 ## Quick Start (Docker Compose)
 
@@ -123,7 +137,7 @@ CLAUDE.md               Full-stack architecture digest for AI copilots
 
 ## Using the Platform
 
-1. **Onboard Interfaces** – Create MQTT and/or Serial interfaces in the dashboard, enable them, and watch packets stream into TimescaleDB.
+1. **Onboard Interfaces** – Create MQTT, Serial, and/or TCP interfaces in the dashboard, enable them, and watch packets stream into TimescaleDB.
 2. **Start Captures** – If you need to view the packets in Wireshark: Launch PCAP sessions from the UI for forensic investigations; download artifacts when complete and open them in Wireshark.
 3. **Instrument Publishing** – For legitimate packet injection: configure virtual nodes and either fire single packets, enable reactive publishing (port-based), or schedule periodic traceroutes to profile paths.
 4. **Explore Dashboards** – Use the Next.js console for operations and the Grafana pack for historical analysis, network topology graph, anomaly detection, SLA monitoring, and optimization insights.

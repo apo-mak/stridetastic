@@ -5,6 +5,7 @@ normalizing and dispatching them to the appropriate protocol handler.
 """
 from .mqtt import handle_mqtt_ingest
 from .serial import handle_serial_ingest
+from .tcp import handle_tcp_ingest
 
 def ingest_packet(source_type, raw_data, meta=None):
     """
@@ -22,7 +23,6 @@ def ingest_packet(source_type, raw_data, meta=None):
     elif source_type == "serial":
         handle_serial_ingest(raw_data, interface_id=interface_id)
     elif source_type == "tcp":
-        # TODO: Implement TCP ingestion
-        pass
+        handle_tcp_ingest(raw_data, interface_id=interface_id)
     else:
         raise ValueError(f"Unknown source_type: {source_type}")

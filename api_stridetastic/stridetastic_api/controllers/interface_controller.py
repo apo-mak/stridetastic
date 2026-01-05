@@ -17,6 +17,8 @@ class InterfaceSchema(Schema):
     mqtt_topic: Optional[str] = None
     mqtt_base_topic: Optional[str] = None
     serial_node_id: Optional[int] = None
+    tcp_hostname: Optional[str] = None
+    tcp_port: Optional[int] = None
 
 @api_controller("/interfaces", tags=["Interfaces"], permissions=[permissions.IsAuthenticated])
 class InterfaceController:
@@ -91,6 +93,8 @@ class InterfaceController:
             mqtt_topic=i.mqtt_topic,
             mqtt_base_topic=i.mqtt_base_topic,
             serial_node_id=i.serial_node.id if i.serial_node else None,
+            tcp_hostname=i.tcp_hostname,
+            tcp_port=i.tcp_port,
         ) for i in qs]
 
     @route.get("/{interface_id}", response={200: InterfaceSchema, 404: MessageSchema}, auth=auth)
@@ -107,4 +111,6 @@ class InterfaceController:
             mqtt_topic=iface.mqtt_topic,
             mqtt_base_topic=iface.mqtt_base_topic,
             serial_node_id=iface.serial_node.id if iface.serial_node else None,
+            tcp_hostname=iface.tcp_hostname,
+            tcp_port=iface.tcp_port,
         )

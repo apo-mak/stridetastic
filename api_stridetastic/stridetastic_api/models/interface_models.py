@@ -2,12 +2,13 @@ from django.db import models
 
 class Interface(models.Model):
     """
-    Represents a communication interface instance (MQTT, SERIAL, etc.).
+    Represents a communication interface instance (MQTT, SERIAL, TCP, etc.).
     Multiple instances per type can exist with their own configuration.
     """
     class Names(models.TextChoices):  # Backwards compatibility (used as type)
         MQTT = "MQTT", "MQTT"
         SERIAL = "SERIAL", "Serial"
+        TCP = "TCP", "TCP (Network)"
 
     class Status(models.TextChoices):
         INIT = "INIT", "Init"
@@ -65,6 +66,10 @@ class Interface(models.Model):
         on_delete=models.SET_NULL,
         help_text="Node to bind the serial interface to (if applicable)."
     )
+
+    # TCP specific configuration (for network-connected nodes)
+    tcp_hostname = models.CharField(max_length=255, null=True, blank=True, help_text="IP address or hostname of the Meshtastic node.")
+    tcp_port = models.IntegerField(null=True, blank=True, default=4403, help_text="TCP port for the Meshtastic node (default 4403).")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

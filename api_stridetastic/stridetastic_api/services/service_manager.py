@@ -7,6 +7,7 @@ from django.conf import settings
 
 from ..interfaces.mqtt_interface import MqttInterface
 from ..interfaces.serial_interface import SerialInterface
+from ..interfaces.tcp_interface import TcpInterface
 from ..models.interface_models import Interface
 from .publisher_service import PublisherService, PublishableInterface
 from .sniffer_service import SnifferService
@@ -179,6 +180,12 @@ class ServiceManager:
             return SerialInterface(
                 port=iface.serial_port or getattr(settings, 'SERIAL_PORT', None),
                 baudrate=iface.serial_baudrate or getattr(settings, 'SERIAL_BAUDRATE', 9600),
+                interface_id=iface.id,
+            )
+        elif iface.name == Interface.Names.TCP:
+            return TcpInterface(
+                hostname=iface.tcp_hostname or getattr(settings, 'TCP_HOSTNAME', 'localhost'),
+                port=iface.tcp_port or getattr(settings, 'TCP_PORT', 4403),
                 interface_id=iface.id,
             )
         else:
