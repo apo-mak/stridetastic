@@ -1,11 +1,12 @@
-from django.test import TestCase
-from unittest.mock import MagicMock, patch
 from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
+from django.test import TestCase
+from meshtastic.protobuf import portnums_pb2
+
+from ..mesh.packet import handler
 from ..models import Interface, Node, NodeLatencyHistory, PublisherReactiveConfig
 from ..services.publisher_service import PublisherService
-from ..mesh.packet import handler
-from meshtastic.protobuf import portnums_pb2
 
 
 class DummyInterfaceRelation:
@@ -26,7 +27,11 @@ class DummyChannelRelation:
     def filter(self, interfaces=None):
         if interfaces is None:
             return DummyChannelRelation(self._channels)
-        filtered = [channel for channel in self._channels if interfaces in getattr(channel, "interfaces", [])]
+        filtered = [
+            channel
+            for channel in self._channels
+            if interfaces in getattr(channel, "interfaces", [])
+        ]
         return DummyChannelRelation(filtered)
 
     def first(self):
@@ -79,9 +84,15 @@ class PublisherServiceReactiveTests(TestCase):
         self.assertEqual(status["config"]["channel_key"], test_key)
 
     def test_listen_interfaces_configured(self):
-        interface = Interface.objects.create(name=Interface.Names.MQTT, display_name="iface-db")
-        config = self.service.update_reactive_config(listen_interface_ids=[interface.id])
-        self.assertListEqual(list(config.listen_interfaces.values_list("id", flat=True)), [interface.id])
+        interface = Interface.objects.create(
+            name=Interface.Names.MQTT, display_name="iface-db"
+        )
+        config = self.service.update_reactive_config(
+            listen_interface_ids=[interface.id]
+        )
+        self.assertListEqual(
+            list(config.listen_interfaces.values_list("id", flat=True)), [interface.id]
+        )
 
         status = self.service.get_reactive_status()
         self.assertListEqual(status["config"]["listen_interface_ids"], [interface.id])
@@ -115,8 +126,12 @@ class PublisherServiceReactiveTests(TestCase):
             mac_address="bb:bb:bb:bb:bb:02",
         )
 
-        interface_stub = SimpleNamespace(pk=1, name="MQTT", status="RUNNING", display_name="iface")
-        channel_stub = SimpleNamespace(channel_id="LongFast", psk="", interfaces=[interface_stub])
+        interface_stub = SimpleNamespace(
+            pk=1, name="MQTT", status="RUNNING", display_name="iface"
+        )
+        channel_stub = SimpleNamespace(
+            channel_id="LongFast", psk="", interfaces=[interface_stub]
+        )
         gateway_stub = SimpleNamespace(node_id="!gateway0001")
         packet_obj = SimpleNamespace(
             interfaces=DummyInterfaceRelation([interface_stub]),
@@ -124,9 +139,15 @@ class PublisherServiceReactiveTests(TestCase):
             gateway_nodes=DummyNodeRelation([gateway_stub]),
         )
 
-        with patch.object(self.service, "_should_inject_for_node", return_value=True), \
-             patch.object(self.service, "_resolve_publish_context", return_value=(MagicMock(), "msh/base")), \
-             patch.object(self.service, "publish_traceroute") as mock_publish:
+        with patch.object(
+            self.service, "_should_inject_for_node", return_value=True
+        ), patch.object(
+            self.service,
+            "_resolve_publish_context",
+            return_value=(MagicMock(), "msh/base"),
+        ), patch.object(
+            self.service, "publish_traceroute"
+        ) as mock_publish:
             mock_publish.return_value = (True, 4242)
             from_node = SimpleNamespace(node_id="!bbbb0002")
             to_node = SimpleNamespace(node_id="!cccc0003")
@@ -175,8 +196,11 @@ class PublisherServiceReactiveTests(TestCase):
             mac_address="cc:cc:cc:cc:cc:03",
         )
 
-        with patch.object(self.service, "publish", return_value=True) as mock_publish, \
-             patch.object(self.service, "_get_global_message_id", return_value=1337):
+        with patch.object(
+            self.service, "publish", return_value=True
+        ) as mock_publish, patch.object(
+            self.service, "_get_global_message_id", return_value=1337
+        ):
             result = self.service.publish_reachability_probe(
                 from_node="!aaaa0001",
                 to_node=target_node.node_id,
@@ -209,8 +233,11 @@ class PublisherServiceReactiveTests(TestCase):
             mac_address="dd:dd:dd:dd:dd:04",
         )
 
-        with patch.object(self.service, "publish", return_value=True) as mock_publish, \
-             patch.object(self.service, "_get_global_message_id", return_value=5555):
+        with patch.object(
+            self.service, "publish", return_value=True
+        ) as mock_publish, patch.object(
+            self.service, "_get_global_message_id", return_value=5555
+        ):
             success, message_id = self.service.publish_traceroute(
                 from_node="!aaaa0001",
                 to_node=target_node.node_id,
@@ -245,8 +272,11 @@ class PublisherServiceReactiveTests(TestCase):
             mac_address="ee:ee:ee:ee:ee:05",
         )
 
-        with patch.object(self.service, "publish", return_value=True) as mock_publish, \
-             patch.object(self.service, "_get_global_message_id", return_value=6666):
+        with patch.object(
+            self.service, "publish", return_value=True
+        ) as mock_publish, patch.object(
+            self.service, "_get_global_message_id", return_value=6666
+        ):
             success, message_id = self.service.publish_traceroute(
                 from_node="!aaaa0001",
                 to_node=target_node.node_id,
@@ -280,13 +310,17 @@ class PublisherServiceDispatchTests(TestCase):
         to_node = MagicMock(name="to_node")
         packet_obj = MagicMock(name="packet_obj")
 
-        with patch("stridetastic_api.mesh.packet.handler.ServiceManager") as manager_cls:
+        with patch(
+            "stridetastic_api.mesh.packet.handler.ServiceManager"
+        ) as manager_cls:
             manager = manager_cls.get_instance.return_value
             manager.get_publisher_service.return_value = None
             publisher_service = MagicMock(name="publisher_service")
             manager.initialize_publisher_service.return_value = publisher_service
 
-            handler._dispatch_to_publisher_service(packet, decoded, portnum, from_node, to_node, packet_obj)
+            handler._dispatch_to_publisher_service(
+                packet, decoded, portnum, from_node, to_node, packet_obj
+            )
 
             manager.get_publisher_service.assert_called_once_with()
             manager.initialize_publisher_service.assert_called_once_with()
@@ -307,12 +341,16 @@ class PublisherServiceDispatchTests(TestCase):
         to_node = MagicMock(name="to_node")
         packet_obj = MagicMock(name="packet_obj")
 
-        with patch("stridetastic_api.mesh.packet.handler.ServiceManager") as manager_cls:
+        with patch(
+            "stridetastic_api.mesh.packet.handler.ServiceManager"
+        ) as manager_cls:
             manager = manager_cls.get_instance.return_value
             publisher_service = MagicMock(name="publisher_service")
             manager.get_publisher_service.return_value = publisher_service
 
-            handler._dispatch_to_publisher_service(packet, decoded, portnum, from_node, to_node, packet_obj)
+            handler._dispatch_to_publisher_service(
+                packet, decoded, portnum, from_node, to_node, packet_obj
+            )
 
             manager.get_publisher_service.assert_called_once_with()
             manager.initialize_publisher_service.assert_not_called()
