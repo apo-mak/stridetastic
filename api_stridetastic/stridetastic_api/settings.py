@@ -110,26 +110,28 @@ WSGI_APPLICATION = "stridetastic_api.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+#
+# Note: this project uses Postgres-specific fields (e.g. ArrayField). SQLite
+# cannot run the full migrations/test suite. Choose database backend via env.
 
-if os.getenv("GITHUB_ACTIONS"):
+DB_ENGINE = os.getenv("DB_ENGINE", "postgres").strip().lower()
+
+if DB_ENGINE == "sqlite":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": ":memory:",
+            "NAME": os.getenv("SQLITE_NAME", ":memory:"),
         }
-    }
-    MIGRATION_MODULES = {
-        "business_consulting_api": None,
     }
 else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": "postgres",
-            "USER": "postgres",
-            "PASSWORD": "postgres",
-            "PORT": 5432,
-            "HOST": "timescale_stridetastic",
+            "NAME": os.getenv("DB_NAME", "postgres"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
+            "PORT": int(os.getenv("DB_PORT", "5432")),
+            "HOST": os.getenv("DB_HOST", "timescale_stridetastic"),
         }
     }
 
