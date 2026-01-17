@@ -16,6 +16,7 @@ from ...models.packet_models import (
     NodeInfoPayload,
     Packet,
     PacketData,
+    PacketDecryptionMethod,
     PositionPayload,
     RouteDiscoveryPayload,
     RouteDiscoveryRoute,
@@ -924,6 +925,7 @@ def handle_decoded_packet(
     packet: mesh_pb2.MeshPacket,
     decoded_data: mesh_pb2.Data,
     packet_obj: Packet,
+    how_decrypted: str = PacketDecryptionMethod.NOT_DECRYPTED,
 ):
     from_node_number = from_node.node_num
     from_node_id = from_node.node_id
@@ -959,6 +961,7 @@ def handle_decoded_packet(
     )
     data_obj.want_response = want_response
     data_obj.got_response = got_response
+    data_obj.how_decrypted = how_decrypted
     data_obj.save()
 
     logging.info(
@@ -1009,7 +1012,9 @@ def handle_packet(
     key: Optional[str] = "AQ==",
     pki_encrypted: bool = False,
 ):
+    how_decrypted = PacketDecryptionMethod.NOT_DECRYPTED
     if packet.HasField("decoded"):
+        packet_obj.how_decrypted = how_decrypted
         (
             packet,
             decoded_data,
@@ -1023,12 +1028,15 @@ def handle_packet(
             packet=packet,
             decoded_data=packet.decoded,
             packet_obj=packet_obj,
+            how_decrypted=how_decrypted,
         )
     elif packet.HasField("encrypted"):
         if not pki_encrypted:
             if key is not None:
                 payload = decrypt_packet(packet, key)
                 if payload is not None:
+                    how_decrypted = PacketDecryptionMethod.AES
+                    packet_obj.how_decrypted = how_decrypted
                     (
                         packet,
                         decoded_data,
@@ -1042,6 +1050,7 @@ def handle_packet(
                         packet=packet,
                         decoded_data=payload,
                         packet_obj=packet_obj,
+                        how_decrypted=how_decrypted,
                     )
                     # return
                 else:
@@ -1067,6 +1076,8 @@ def handle_packet(
                 if result.success and result.plaintext is not None:
                     data = mesh_pb2.Data()
                     data.ParseFromString(result.plaintext)
+                    how_decrypted = PacketDecryptionMethod.PKI
+                    packet_obj.how_decrypted = how_decrypted
                     (
                         packet,
                         decoded_data,
@@ -1080,6 +1091,7 @@ def handle_packet(
                         packet=packet,
                         decoded_data=data,
                         packet_obj=packet_obj,
+                        how_decrypted=how_decrypted,
                     )
                 else:
                     logging.info(f"[PKI] Decryption skipped: {result.reason}")
