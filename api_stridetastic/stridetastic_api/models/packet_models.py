@@ -14,6 +14,12 @@ class Ports(models.TextChoices):
     ROUTING_APP = "ROUTING_APP", "Routing"
 
 
+class PacketDecryptionMethod(models.TextChoices):
+    NOT_DECRYPTED = "not_decrypted", "Not decrypted"
+    AES = "aes", "AES"
+    PKI = "pki", "PKI"
+
+
 class Packet(TimescaleModel):
     """
     Represents a Meshtastic packet.
@@ -118,6 +124,12 @@ class Packet(TimescaleModel):
         null=True,
         help_text="Indicates if the packet is encrypted using PKI.",
     )
+    how_decrypted = models.CharField(
+        max_length=32,
+        choices=PacketDecryptionMethod.choices,
+        default=PacketDecryptionMethod.NOT_DECRYPTED,
+        help_text="How the packet payload was decrypted (or not).",
+    )
     public_key = models.CharField(
         max_length=255,
         blank=True,
@@ -204,6 +216,12 @@ class PacketData(TimescaleModel):
         blank=True,
         null=True,
         help_text="Indicates if a response has been received for the packet data.",
+    )
+    how_decrypted = models.CharField(
+        max_length=32,
+        choices=PacketDecryptionMethod.choices,
+        default=PacketDecryptionMethod.NOT_DECRYPTED,
+        help_text="How the packet payload was decrypted (or not).",
     )
 
     class Meta:

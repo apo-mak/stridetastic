@@ -55,6 +55,7 @@ class PacketAdmin(ModelAdmin):
         "delayed",
         "via_mqtt",
         "pki_encrypted",
+        "how_decrypted",
         "public_key",
         "raw_data",
         "time",
@@ -107,6 +108,7 @@ class PacketDataAdmin(ModelAdmin):
         "request_id",
         "reply_id",
         "got_response",
+        "how_decrypted",
         "time",
     )
 
@@ -133,6 +135,7 @@ class PacketDataAdmin(ModelAdmin):
         "reply_id",
         "want_response",
         "got_response",
+        "how_decrypted",
         "time",
     )
     fieldsets = (
@@ -149,6 +152,7 @@ class PacketDataAdmin(ModelAdmin):
                     "reply_id",
                     "want_response",
                     "got_response",
+                    "how_decrypted",
                     "time",
                 ),
             },
