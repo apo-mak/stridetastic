@@ -10,7 +10,7 @@ on:
       - "**/Dockerfile"
       - ".github/workflows/frontend-ci.yml"
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
     paths:
       - "web_stridetastic/**"
       - "package.json"

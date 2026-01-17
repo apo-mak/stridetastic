@@ -10,7 +10,7 @@ on:
       - "**/Dockerfile"
       - ".github/workflows/backend-ci.yml"
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
     paths:
       - "api_stridetastic/**"
       - "compose.yaml"
